@@ -1,0 +1,51 @@
+plugins {
+    id 'base' // includes 'build' and 'clean' tasks
+}
+
+// Run composer install
+task composerInstall(type: Exec) {
+    commandLine 'composer', 'install'
+}
+
+// Run PHPUnit tests
+task runPhpTests(type: Exec) {
+    dependsOn composerInstall
+    commandLine './vendor/bin/phpunit', '--testdox'
+}
+
+// Package the PHP app into a .zip file
+task packageApp(type: Zip) {
+    dependsOn runPhpTests
+
+    from('.') {
+        include 'src/**'
+        include 'tests/**'
+        include 'composer.json'
+        include 'composer.lock'
+        include 'phpunit.xml'
+        include 'vendor/**'
+    }
+
+    destinationDirectory = file("$buildDir/distributions")
+    archiveFileName = "php-gradle-app.zip"
+}
+
+// Optional: Package the PHP app into a .tar file
+task packageTar(type: Tar) {
+    dependsOn runPhpTests
+
+    from('.') {
+        include 'src/**'
+        include 'tests/**'
+        include 'composer.json'
+        include 'composer.lock'
+        include 'phpunit.xml'
+        include 'vendor/**'
+    }
+
+    destinationDirectory = file("$buildDir/distributions")
+    archiveFileName = "php-gradle-app.tar"
+}
+
+build.dependsOn packageApp // Make 'gradle build' run packageApp by default
+
